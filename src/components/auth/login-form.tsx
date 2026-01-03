@@ -21,7 +21,7 @@ import { Eye, EyeOff, Loader2, Mail } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
-import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
+import { DEFAULT_LOGIN_REDIRECT, ROLE_REDIRECTS } from "@/routes";
 import { signIn } from "next-auth/react";
 
 export function LoginForm() {
@@ -58,6 +58,19 @@ export function LoginForm() {
         });
 
         toast.success("Logged in!", { id: toastId, closeButton: true });
+
+        if (data?.needsPasswordChange) {
+          router.push(`/auth/change-password?userId=${data.userId}`);
+          return;
+        }
+
+        if (data?.userRole) {
+          const redirectPath =
+            ROLE_REDIRECTS[data.userRole] ?? DEFAULT_LOGIN_REDIRECT;
+
+          router.push(redirectPath);
+          return;
+        }
 
         router.push(callbackUrl || DEFAULT_LOGIN_REDIRECT);
       } catch (err: any) {
