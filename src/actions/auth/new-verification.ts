@@ -4,16 +4,29 @@ import { getVerifationTokenByToken } from "@/data/verification-token";
 import { db } from "@/lib/db";
 
 export const newVerification = async (token: string) => {
+  // Validate token input
+  if (!token || token.trim() === "") {
+    return { error: "Token is missing or invalid" };
+  }
+
   const existingToken = await getVerifationTokenByToken(token);
 
   if (!existingToken) {
-    return { error: "Token does not exist!" };
+    return { error: "Token does not exist or has already been used!" };
   }
 
   const hasExpired = new Date(existingToken.expires) < new Date();
 
   if (hasExpired) {
-    return { error: "Token has expited!" };
+    // Delete expired token
+    await db.token
+      .delete({
+        where: { id: existingToken.id },
+      })
+      .catch(() => null);
+    return {
+      error: "Token has expired! Please request a new verification link.",
+    };
   }
 
   const existingUser = await getUserByEmail(existingToken.email);
@@ -43,12 +56,12 @@ export const newVerification = async (token: string) => {
     await db.token.delete({
       where: {
         id: existingToken.id,
-        type: "EmailVerification",
       },
     });
-  } catch (e) {
-    return { error: "Error in EmailVerification" };
-  }
 
-  return { success: "Email verified!" };
+    return { success: "Email verified successfully!" };
+  } catch (e) {
+    console.error("Error in EmailVerification:", e);
+    return { error: "Error verifying email. Please try again." };
+  }
 };

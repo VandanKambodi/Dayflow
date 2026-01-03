@@ -16,6 +16,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { useCurrentUserClient } from "@/hook/use-current-user";
 import { signOut } from "next-auth/react";
+import Image from "next/image";
+import {getTodayAttendanceStatus} from "@/actions/employee/attendance"
+
 
 export function EmployeeNavbar() {
   const pathname = usePathname();
@@ -24,6 +27,8 @@ export function EmployeeNavbar() {
 
   const [isCheckedIn, setIsCheckedIn] = React.useState(false);
   const [checkInTime, setCheckInTime] = React.useState<string | null>(null);
+  const [loadingAttendance, setLoadingAttendance] = React.useState(true);
+
 
   if (status === "loading") return null;
 
@@ -39,7 +44,21 @@ export function EmployeeNavbar() {
       setCheckInTime(null);
     }
     setIsCheckedIn(!isCheckedIn);
+
+    
   };
+
+  React.useEffect(() => {
+      if (!user) return;
+  
+      setLoadingAttendance(true);
+      getTodayAttendanceStatus()
+        .then((attendance) => {
+          setIsCheckedIn(attendance.status === "PRESENT");
+          setCheckInTime(attendance.checkInTime ?? null);
+        })
+        .finally(() => setLoadingAttendance(false));
+    }, [user]);
 
   const navLinks = [
     // {
@@ -48,7 +67,7 @@ export function EmployeeNavbar() {
     // },
     {
       name: "Attendance",
-      href: "/employee/attendance",
+      href: "/employee/attendence",
     },
     {
       name: "Time Off",
@@ -56,20 +75,22 @@ export function EmployeeNavbar() {
     },
   ];
 
+  if (!user) return null;
+
   return (
     <nav className="border-b bg-background/95 backdrop-blur sticky top-0 z-50 w-full">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
         {/* Left */}
         <div className="flex items-center gap-8">
-          <Link
-            href="/employee/dashboard"
-            className="flex items-center gap-2 font-bold tracking-tight"
-          >
-            <div className="bg-foreground text-background size-6 rounded flex items-center justify-center">
-              V
-            </div>
-            <span className="hidden sm:inline-block">v0 Corp</span>
-          </Link>
+          <div className="size-6 relative flex items-center justify-center">
+            <Image
+              src={user.image}
+              alt={user?.companyName || "Logo"}
+              width={30} // adjust as needed
+              height={30} // adjust as needed
+              // className="rounded"
+            />
+          </div>
 
           <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => {
@@ -146,7 +167,7 @@ export function EmployeeNavbar() {
               <DropdownMenuSeparator />
 
               <DropdownMenuItem asChild>
-                <Link href="/profile" className="flex items-center">
+                <Link href="/employee/profile" className="flex items-center">
                   <User className="mr-2 h-4 w-4" />
                   My Profile
                 </Link>

@@ -57,19 +57,41 @@ export const AddEmployee = async (
     const autoPassword = generateAutoPassword();
     const hashedPassword = await bcrypt.hash(autoPassword, 10);
 
-    // Create employee user
+    // Create employee user with related records
     const employee = await db.user.create({
       data: {
         name,
         email,
         phoneNumber,
         password: hashedPassword,
+        emailVerified: new Date(),
         employeeId,
         role: "EMPLOYEE",
         companyName: hrUser.companyName,
         companyLogo: hrUser.companyLogo,
         hrId: hrUser.id,
         isPasswordChanged: false,
+        // Auto-create employee details
+        employeeDetails: {
+          create: {
+            dateOfJoining: new Date(),
+          },
+        },
+        // Auto-create salary info
+        salaryInfo: {
+          create: {
+            wageType: "FIXED",
+          },
+        },
+        // Auto-create time-off allocation for current year
+        timeOffAllocations: {
+          create: {
+            year: new Date().getFullYear(),
+            paidTimeOffDays: 20,
+            sickLeaveDays: 10,
+            unpaidLeavesDays: 0,
+          },
+        },
       },
     });
 

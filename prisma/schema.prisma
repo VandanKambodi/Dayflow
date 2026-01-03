@@ -32,6 +32,14 @@ model User {
   sessions Session[]
   employees User[] @relation("HREmployees")
   hr User? @relation("HREmployees", fields: [hrId], references: [id], onDelete: SetNull)
+  
+  // Relations to new models
+  employeeDetails EmployeeDetails?
+  salaryInfo SalaryInfo?
+  attendances Attendance[]
+  timeOffRequests TimeOffRequest[]
+  approvedTimeOffRequests TimeOffRequest[] @relation("TimeOffApprover")
+  timeOffAllocations TimeOffAllocation[]
 }
 
 enum UserRole {
@@ -83,4 +91,165 @@ model token {
 enum TokenTypes {
   EmailVerification
   PasswordReset
+}
+
+// Employee Details model
+model EmployeeDetails {
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  dateOfBirth       DateTime?
+  mailingAddress    String?
+  nationality       String?
+  personalEmail     String?
+  gender            String?
+  maritalStatus     String?
+  dateOfJoining     DateTime?
+  department        String?
+  designation       String?
+  manager           String?
+  location          String?
+  
+  // Security & ID fields
+  panNumber         String?
+  aadharNumber      String?
+  accountNumber     String?
+  bankName          String?
+  ifscCode          String?
+  
+  // Resume & Skills
+  resume            String?   // URL to resume document
+  skills            String?   // JSON string of skills array
+  about             String?   // About the employee
+  interests         String?   // Hobbies and interests
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Salary Information
+model SalaryInfo {
+  id                        String    @id @default(cuid())
+  userId                    String    @unique
+  wageType                  WageType  @default(FIXED)
+  monthlyWage               Float?
+  yearlyWage                Float?
+  baseSalary                Float?
+  baseSalaryPercentage      Float?    // Percentage of wage
+  
+  // Allowances
+  hraAllowance              Float?
+  hraAllowancePercentage    Float?
+  standardAllowance         Float?
+  standardAllowancePercentage Float?
+  performanceBonus          Float?
+  performanceBonusPercentage Float?
+  leaveTravelAllowance      Float?
+  leaveTravelAllowancePercentage Float?
+  fixedAllowance            Float?
+  fixedAllowancePercentage  Float?
+  
+  // Tax Deductions
+  professionalTax           Float?
+  professionalTaxDeduction  Float?
+  incomeTaxDeduction        Float?
+  
+  // PF and other benefits
+  pfRate                    Float?    // PF rate percentage
+  pfContribution            Float?
+  
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum WageType {
+  FIXED
+  VARIABLE
+}
+
+// Attendance model
+model Attendance {
+  id                String    @id @default(cuid())
+  userId            String
+  date              DateTime  @db.Date
+  checkInTime       DateTime?
+  checkOutTime      DateTime?
+  workHours         Float?    // Calculated work hours
+  breakHours        Float?    @default(0)
+  extraHours        Float?    @default(0)
+  status            AttendanceStatus @default(ABSENT)
+  notes             String?
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, date])
+  @@index([userId, date])
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  ON_LEAVE
+  HALF_DAY
+}
+
+// Time Off Request
+model TimeOffRequest {
+  id                String    @id @default(cuid())
+  userId            String
+  type              TimeOffType
+  startDate         DateTime  @db.Date
+  endDate           DateTime  @db.Date
+  reason            String?
+  numberOfDays      Int
+  status            TimeOffStatus @default(PENDING)
+  approvedBy        String?   // HR user who approved
+  rejectionReason   String?
+  attachment        String?   // Sick leave certificate URL
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approver User? @relation("TimeOffApprover", fields: [approvedBy], references: [id], onDelete: SetNull)
+  
+  @@index([userId, status])
+  @@index([approvedBy])
+}
+
+enum TimeOffType {
+  PAID_TIME_OFF
+  SICK_LEAVE
+  UNPAID_LEAVES
+}
+
+enum TimeOffStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+// Time Off Allocation (Annual entitlements)
+model TimeOffAllocation {
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  year              Int
+  paidTimeOffDays   Int       @default(0)
+  paidTimeOffUsed   Int       @default(0)
+  sickLeaveDays     Int       @default(0)
+  sickLeaveUsed     Int       @default(0)
+  unpaidLeavesDays  Int       @default(0)
+  unpaidLeavesUsed  Int       @default(0)
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

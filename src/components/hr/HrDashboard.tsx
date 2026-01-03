@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import { AddEmployeeForm } from "@/components/auth/add-employee-form";
+import { HRCheckInOut } from "./HRCheckInOut";
 import { useState } from "react";
 import { LogOut, Plus, Users } from "lucide-react";
 import Image from "next/image";
@@ -34,7 +35,7 @@ export default function HRDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8">
+    <div className="min-h-screen p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
@@ -68,6 +69,13 @@ export default function HRDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Check-in/Check-out Card */}
+            <HRCheckInOut
+              isCheckedIn={session?.isCheckedIn || false}
+              lastCheckIn={session?.lastCheckIn || null}
+              lastCheckOut={session?.lastCheckOut || null}
+            />
+
             {/* Company Info Card */}
             <Card className="bg-slate-800 border-slate-700 p-6">
               <h2 className="text-xl font-semibold text-white mb-4">

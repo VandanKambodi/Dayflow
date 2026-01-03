@@ -33,6 +33,17 @@ export const Register = async (values: z.infer<typeof HRRegisterSchema>) => {
       companyLogo,
       phoneNumber,
       role: "HR",
+      // Auto-create related records for HR
+      employeeDetails: {
+        create: {
+          dateOfJoining: new Date(),
+        },
+      },
+      salaryInfo: {
+        create: {
+          wageType: "FIXED",
+        },
+      },
     },
   });
 

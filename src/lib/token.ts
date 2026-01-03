@@ -14,7 +14,6 @@ export const generateVerificationToken = async (email: string) => {
     await db.token.delete({
       where: {
         id: existingToken.id,
-        type: "EmailVerification",
       },
     });
   }

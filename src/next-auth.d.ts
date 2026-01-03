@@ -7,6 +7,9 @@ export type ExtendedUser = DefaultSession["user"] & {
   companyName?: string;
   phoneNumber?: string;
   isPasswordChanged: boolean;
+  isCheckedIn?: boolean;
+  lastCheckIn?: Date;
+  lastCheckOut?: Date;
 };
 
 declare module "next-auth" {
@@ -21,6 +24,9 @@ declare module "next-auth" {
     companyName?: string;
     phoneNumber?: string;
     isPasswordChanged: boolean;
+    isCheckedIn?: boolean;
+    lastCheckIn?: Date;
+    lastCheckOut?: Date;
   }
 }
 
@@ -32,5 +38,8 @@ declare module "next-auth/jwt" {
     companyName?: string;
     phoneNumber?: string;
     isPasswordChanged: boolean;
+    isCheckedIn?: boolean;
+    lastCheckIn?: Date;
+    lastCheckOut?: Date;
   }
 }
