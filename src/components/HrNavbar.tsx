@@ -145,7 +145,7 @@ export function HrNavbar() {
 
               <DropdownMenuItem
                 className="text-destructive"
-                onClick={() => signOut({ callbackUrl: "/auth/login" })}
+                onClick={() => signOut({ callbackUrl: "/" })}
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Log Out

@@ -24,7 +24,7 @@ export default function HRDashboard() {
   }
 
   if (!session || session.role !== "HR") {
-    router.push("/dashboard");
+    router.push("/employee/attendence");
     return null;
   }
 

@@ -33,23 +33,18 @@ export const {
   callbacks: {
     // ⚡ JWT callback
     async jwt({ token, user }) {
-      // First login OR missing role in token
-      if (user?.email || !token.role) {
-        const dbUser = await db.user.findUnique({
-          where: { email: user?.email ?? token.email! },
-        });
-
-        if (!dbUser) return token;
-
-        token.id = dbUser.id;
-        token.role = dbUser.role;
-        token.employeeId = dbUser.employeeId;
-        token.companyName = dbUser.companyName;
-        token.companyLogo = dbUser.companyLogo;
-        token.phoneNumber = dbUser.phoneNumber;
-        token.isPasswordChanged = dbUser.isPasswordChanged;
+      // First login: `user` exists
+      if (user) {
+        token.id = user.id;
+        token.role = user.role; // ⚡ role is stored
+        token.employeeId = user.employeeId;
+        token.companyName = user.companyName;
+        token.companyLogo = user.image; // image from user object
+        token.phoneNumber = user.phoneNumber;
+        token.isPasswordChanged = user.isPasswordChanged;
       }
 
+      // Subsequent requests: token persists
       return token;
     },
 
@@ -57,14 +52,13 @@ export const {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        session.user.role = token.role as string; // ⚡ role now included
         session.user.employeeId = token.employeeId as string | undefined;
         session.user.companyName = token.companyName as string | undefined;
         session.user.image = token.companyLogo as string | null;
         session.user.phoneNumber = token.phoneNumber as string | undefined;
         session.user.isPasswordChanged = token.isPasswordChanged as boolean;
       }
-
       return session;
     },
 
@@ -134,6 +128,7 @@ export const {
           name: user.name,
           email: user.email,
           image: user.companyLogo ?? null,
+          role: user.role,
         };
       },
     }),

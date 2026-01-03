@@ -19,7 +19,7 @@ export default function EmployeeDashboard() {
   }
 
   if (!session || session.role !== "EMPLOYEE") {
-    router.push("/dashboard");
+    router.push("/hr/employees");
     return null;
   }
 

@@ -10,7 +10,7 @@ export default function HrLayout({ children }: { children: React.ReactNode }) {
   if (status === "loading") return null;
 
   if (user?.role !== "HR") {
-    redirect("/employee/dashboard");
+    redirect("/employee/attendence");
   }
 
   return (

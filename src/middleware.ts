@@ -16,6 +16,7 @@ export async function middleware(req: NextRequest) {
 
   const session = await auth();
   const isLoggedIn = !!session?.user;
+  console.log(session);
 
   const pathname = nextUrl.pathname;
 

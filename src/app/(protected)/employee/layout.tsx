@@ -14,7 +14,7 @@ export default function EmployeeLayout({
   if (status === "loading") return null;
 
   if (user?.role !== "EMPLOYEE") {
-    redirect("/hr/dashboard");
+    redirect("/hr/employees");
   }
 
   return (
