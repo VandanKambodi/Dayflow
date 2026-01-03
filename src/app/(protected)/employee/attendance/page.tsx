@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, Clock, CalendarDays, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { getMyAttendance } from "@/actions/employee/get-my-attendance";
 import Loading from "@/components/Loading";
 import { toast } from "sonner";
@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+// --- Types ---
 type AttendanceRecord = {
   id: string;
   date: string;
@@ -88,155 +89,176 @@ export default function EmployeeAttendancePage() {
   };
 
   const formatDateDisplay = (month: number, year: number) => {
-    const date = new Date(year, month, 22); // Using 22 as shown in reference
-    const day = date.getDate();
+    // Just for the visual header, not functional logic
+    const date = new Date(year, month, 1); 
     const monthName = date.toLocaleDateString("en-US", { month: "long" });
-    return `${day}, ${monthName} ${year}`;
+    return `${monthName} ${year}`;
+  };
+  
+  // Status Badge Logic (Optional, if you want to use it later)
+  const getStatusColor = (status: string) => {
+      // You can implement this if you decide to show the status column
+      return "text-[#CFCBC8]";
   };
 
-
-  if (isLoading) {
-    return <Loading />;
-  }
+  if (isLoading) return <Loading />;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="space-y-6">
-        {/* Header */}
-        <h1 className="text-2xl font-bold text-[#CFCBC8]">Attendance</h1>
+    <div className="min-h-screen bg-black text-[#CFCBC8] selection:bg-[#CFCBC8] selection:text-black relative font-sans">
+      
+      {/* ================= BACKGROUND ================= */}
+      <div className="fixed inset-0 z-0 h-full w-full bg-black bg-[linear-gradient(to_right,#cfcbc80a_1px,transparent_1px),linear-gradient(to_bottom,#cfcbc80a_1px,transparent_1px)] bg-[size:24px_24px]">
+        <div className="absolute top-0 right-0 -z-10 h-[500px] w-[500px] rounded-full bg-[#CFCBC8] opacity-5 blur-[120px]"></div>
+      </div>
 
-        {/* Date Navigation and Summary */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          {/* Date Navigation */}
-          <div className="flex items-center gap-2">
+      <div className="relative z-10 max-w-7xl mx-auto p-6 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        
+        {/* --- Header --- */}
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-[#CFCBC8] to-[#999] bg-clip-text text-transparent">
+            My Attendance
+          </h1>
+          <p className="text-[#CFCBC8]/50 text-sm">
+            Track your daily check-ins, work hours, and monthly summary.
+          </p>
+        </div>
+
+        {/* --- Controls & Summary --- */}
+        <div className="flex flex-col lg:flex-row justify-between items-start gap-6">
+          
+          {/* Left: Summary Stats */}
+          <div className="flex flex-wrap gap-4 w-full lg:w-auto">
+             {/* Present Card */}
+            <div className="flex-1 min-w-[140px] bg-zinc-900/30 border border-[#CFCBC8]/10 rounded-xl p-4 backdrop-blur-sm shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                <CheckCircle2 className="w-8 h-8 text-[#CFCBC8]" />
+              </div>
+              <div className="text-xs font-medium text-[#CFCBC8]/50 uppercase tracking-wider mb-1">Days Present</div>
+              <div className="text-2xl font-bold text-[#CFCBC8]">{summary.daysPresent}</div>
+            </div>
+
+            {/* Leaves Card */}
+            <div className="flex-1 min-w-[140px] bg-zinc-900/30 border border-[#CFCBC8]/10 rounded-xl p-4 backdrop-blur-sm shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                <XCircle className="w-8 h-8 text-[#CFCBC8]" />
+              </div>
+              <div className="text-xs font-medium text-[#CFCBC8]/50 uppercase tracking-wider mb-1">Leaves Taken</div>
+              <div className="text-2xl font-bold text-[#CFCBC8]">{summary.leavesCount}</div>
+            </div>
+
+            {/* Total Days Card */}
+            <div className="flex-1 min-w-[140px] bg-zinc-900/30 border border-[#CFCBC8]/10 rounded-xl p-4 backdrop-blur-sm shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                <CalendarDays className="w-8 h-8 text-[#CFCBC8]" />
+              </div>
+              <div className="text-xs font-medium text-[#CFCBC8]/50 uppercase tracking-wider mb-1">Working Days</div>
+              <div className="text-2xl font-bold text-[#CFCBC8]">{summary.totalWorkingDays}</div>
+            </div>
+          </div>
+
+          {/* Right: Date Navigation */}
+          <div className="flex items-center gap-2 bg-zinc-900/50 p-1.5 rounded-xl border border-[#CFCBC8]/10 backdrop-blur-md">
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon"
               onClick={() => handleMonthChange("prev")}
-              className="border-[#CFCBC8]/20 text-[#CFCBC8] hover:bg-[#CFCBC8]/10"
+              className="text-[#CFCBC8] hover:bg-[#CFCBC8]/10 hover:text-[#CFCBC8] rounded-lg h-9 w-9"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
 
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              className="bg-black/40 border border-[#CFCBC8]/20 text-[#CFCBC8] rounded-md px-3 py-2 focus:outline-none focus:border-[#CFCBC8]/50"
-            >
-              {[
-                "January",
-                "February",
-                "March",
-                "April",
-                "May",
-                "June",
-                "July",
-                "August",
-                "September",
-                "October",
-                "November",
-                "December",
-              ].map((month, index) => (
-                <option key={index} value={index}>
-                  {month}
-                </option>
-              ))}
-            </select>
+            <div className="flex gap-2 px-2">
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                className="bg-transparent text-[#CFCBC8] text-sm font-medium focus:outline-none cursor-pointer [&>option]:bg-zinc-900 [&>option]:text-[#CFCBC8]"
+              >
+                {[
+                  "January", "February", "March", "April", "May", "June",
+                  "July", "August", "September", "October", "November", "December"
+                ].map((month, index) => (
+                  <option key={index} value={index}>{month}</option>
+                ))}
+              </select>
 
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="bg-black/40 border border-[#CFCBC8]/20 text-[#CFCBC8] rounded-md px-3 py-2 focus:outline-none focus:border-[#CFCBC8]/50"
-            >
-              {Array.from({ length: 5 }, (_, i) => {
-                const year = new Date().getFullYear() - 2 + i;
-                return (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                );
-              })}
-            </select>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                className="bg-transparent text-[#CFCBC8] text-sm font-medium focus:outline-none cursor-pointer [&>option]:bg-zinc-900 [&>option]:text-[#CFCBC8]"
+              >
+                {Array.from({ length: 5 }, (_, i) => {
+                  const year = new Date().getFullYear() - 2 + i;
+                  return <option key={year} value={year}>{year}</option>;
+                })}
+              </select>
+            </div>
 
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon"
               onClick={() => handleMonthChange("next")}
-              className="border-[#CFCBC8]/20 text-[#CFCBC8] hover:bg-[#CFCBC8]/10"
+              className="text-[#CFCBC8] hover:bg-[#CFCBC8]/10 hover:text-[#CFCBC8] rounded-lg h-9 w-9"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
-
-          {/* Summary Statistics */}
-          <div className="flex flex-wrap gap-4">
-            <div className="bg-black/40 border border-[#CFCBC8]/10 rounded-lg px-4 py-3 min-w-[180px]">
-              <div className="text-xs text-[#CFCBC8]/60 mb-1">
-                Count of days present
-              </div>
-              <div className="text-lg font-semibold text-[#CFCBC8]">
-                {summary.daysPresent}
-              </div>
-            </div>
-            <div className="bg-black/40 border border-[#CFCBC8]/10 rounded-lg px-4 py-3 min-w-[180px]">
-              <div className="text-xs text-[#CFCBC8]/60 mb-1">Leaves count</div>
-              <div className="text-lg font-semibold text-[#CFCBC8]">
-                {summary.leavesCount}
-              </div>
-            </div>
-            <div className="bg-black/40 border border-[#CFCBC8]/10 rounded-lg px-4 py-3 min-w-[180px]">
-              <div className="text-xs text-[#CFCBC8]/60 mb-1">
-                Total working days
-              </div>
-              <div className="text-lg font-semibold text-[#CFCBC8]">
-                {summary.totalWorkingDays}
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Date Display */}
-        <div className="text-lg font-semibold text-[#CFCBC8]">
-          {formatDateDisplay(selectedMonth, selectedYear)}
+        {/* --- Date Display Header --- */}
+        <div className="flex items-center gap-2 text-[#CFCBC8]/80 pb-2 border-b border-[#CFCBC8]/10">
+            <Calendar className="w-4 h-4" />
+            <span className="text-sm font-medium">Viewing records for:</span>
+            <span className="text-sm font-bold text-[#CFCBC8]">{formatDateDisplay(selectedMonth, selectedYear)}</span>
         </div>
 
-        {/* Attendance Table */}
-        <div className="bg-black/40 border border-[#CFCBC8]/10 rounded-xl overflow-hidden">
+        {/* --- Attendance Table --- */}
+        <div className="rounded-2xl border border-[#CFCBC8]/10 bg-zinc-900/30 backdrop-blur-sm overflow-hidden shadow-[0_0_15px_-5px_rgba(207,203,200,0.1)]">
           <Table>
             <TableHeader>
-              <TableRow className="border-[#CFCBC8]/10 hover:bg-[#CFCBC8]/5">
-                <TableHead className="text-[#CFCBC8] font-semibold">Date</TableHead>
+              <TableRow className="border-[#CFCBC8]/10 hover:bg-transparent bg-[#CFCBC8]/5">
+                <TableHead className="text-[#CFCBC8] font-semibold pl-6">Date</TableHead>
                 <TableHead className="text-[#CFCBC8] font-semibold">Check In</TableHead>
                 <TableHead className="text-[#CFCBC8] font-semibold">Check Out</TableHead>
                 <TableHead className="text-[#CFCBC8] font-semibold">Work Hours</TableHead>
-                <TableHead className="text-[#CFCBC8] font-semibold">Extra hours</TableHead>
+                <TableHead className="text-[#CFCBC8] font-semibold">Extra Hours</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {attendanceData.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-[#CFCBC8]/60">
-                    No attendance records found for this month
+                <TableRow className="border-[#CFCBC8]/10 hover:bg-transparent">
+                  <TableCell colSpan={5} className="h-48 text-center text-[#CFCBC8]/40">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                        <Clock className="w-10 h-10 opacity-20" />
+                        <p>No attendance records found for this month</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : (
                 attendanceData.map((record) => (
                   <TableRow
                     key={record.id}
-                    className="border-[#CFCBC8]/10 hover:bg-[#CFCBC8]/5"
+                    className="border-[#CFCBC8]/5 hover:bg-[#CFCBC8]/5 transition-colors group"
                   >
-                    <TableCell className="text-[#CFCBC8]">{record.date}</TableCell>
-                    <TableCell className="text-[#CFCBC8]">
-                      {record.checkIn || "-"}
+                    <TableCell className="text-[#CFCBC8] font-medium pl-6">
+                        {record.date}
                     </TableCell>
-                    <TableCell className="text-[#CFCBC8]">
-                      {record.checkOut || "-"}
+                    <TableCell className="text-[#CFCBC8]/80">
+                      {record.checkIn || <span className="text-[#CFCBC8]/20">-</span>}
                     </TableCell>
-                    <TableCell className="text-[#CFCBC8]">
-                      {record.workHours || "-"}
+                    <TableCell className="text-[#CFCBC8]/80">
+                      {record.checkOut || <span className="text-[#CFCBC8]/20">-</span>}
                     </TableCell>
-                    <TableCell className="text-[#CFCBC8]">
-                      {record.extraHours || "-"}
+                    <TableCell className="text-[#CFCBC8]/80">
+                      {record.workHours || <span className="text-[#CFCBC8]/20">-</span>}
+                    </TableCell>
+                    <TableCell>
+                       {record.extraHours ? (
+                           <span className="text-green-400 font-medium bg-green-500/10 px-2 py-0.5 rounded text-xs border border-green-500/20">
+                               +{record.extraHours}
+                           </span>
+                       ) : (
+                           <span className="text-[#CFCBC8]/20">-</span>
+                       )}
                     </TableCell>
                   </TableRow>
                 ))
@@ -248,4 +270,3 @@ export default function EmployeeAttendancePage() {
     </div>
   );
 }
-

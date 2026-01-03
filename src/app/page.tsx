@@ -158,6 +158,9 @@ export default function Home() {
 
       {/* HERO */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-24 text-center">
+
+        
+
         <h2 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <span className="bg-gradient-to-b from-[#CFCBC8] via-[#E6E2DF] to-[#666] bg-clip-text text-transparent">
             Modern HR Management
